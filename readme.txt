@@ -16,3 +16,5 @@ json array
         "employeeId": "aecf396d-982e-44a2-875d-72f941136b5b",
         "photo": 
     }
+
+    post http://localhost:5001/api/employees/login     url for log in
