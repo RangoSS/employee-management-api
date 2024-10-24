@@ -3,8 +3,12 @@ const { v4: uuidv4 } = require('uuid');
 
 // Login function
 exports.login = async (req, res) => {
+    console.log('in login');
+    
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body; 
+        console.log({ body: req.body });
+        
 
         // Authenticate with Firebase using the Admin SDK
         const userCredential = await admin.auth().getUserByEmail(email);
@@ -21,7 +25,10 @@ exports.login = async (req, res) => {
         res.status(200).json({ message: 'Login successful', userId: userCredential.uid });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(401).json({ message: 'Login failed', error });
+        console.log({ body: req.body });
+        console.log('hi there');
+        
+        res.status(401).json({ message: 'Login failed you', error });
     }
 };
 
