@@ -1,27 +1,17 @@
 const express = require('express');
 const multer = require('multer');
 const cookieParser = require('cookie-parser');
-const { 
-    createEmployee, 
-    updateEmployee, 
-    deleteEmployee, 
-    getAllEmployees, 
-    login 
-} = require('../controllers/employeeController'); 
+const { createEmployee, updateEmployee, deleteEmployee, getAllEmployees, login } = require('../controllers/employeeController');
 const { checkAuth } = require('../middleware/authMiddleware');
 
 const router = express.Router();
-const upload = multer(); // Configure multer
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
-// Middleware to parse cookies
 router.use(cookieParser());
+router.post('/login', login);
+router.post('/', upload.single('photo'), createEmployee);
+router.put('/:employeeId', upload.single('photo'), checkAuth, updateEmployee);
+router.delete('/:employeeId', checkAuth, deleteEmployee);
+router.get('/', getAllEmployees);
 
-// Routes for employee operations
-router.post('/login', login); // User login
-router.post('/', upload.single('photo'), createEmployee); // Create an employee
-router.put('/:employeeId', upload.single('photo'), checkAuth, updateEmployee); // Update an employee
-router.delete('/:employeeId', deleteEmployee); // Delete an employee
-router.get('/', getAllEmployees); // Retrieve all employees
-
-//router.delete('/:employeeId', checkAuth, deleteEmployee); // Delete an employee
-module.exports = router; 
+module.exports = router;
