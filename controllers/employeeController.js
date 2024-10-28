@@ -230,19 +230,25 @@ exports.deleteEmployee = async (req, res) => {
         // Delete the photo from Firebase Storage if it exists
         if (photoUrl) {
             // Extract only the file name without query parameters
-            const fileName = photoUrl.split('/').pop().split('?')[0]; // Get the file name without query params
-            const filePath = `employees/${fileName}`;
-            const file = bucket.file(filePath);
+            const fileName = photoUrl.split('/').pop().split('?')[0];
+            const filePath = `employees/${fileName}`; // Construct the file path
 
+            console.log(`Photo URL: ${photoUrl}`);
+            console.log(`Extracted File Name: ${fileName}`);
+            console.log(`Constructed File Path: ${filePath}`);
+
+            const file = bucket.file(filePath);
             const [exists] = await file.exists();
-            console.log({ exists });
-            
+            console.log({ exists, filePath });
+
             if (exists) {
                 await file.delete();
-                // console.log(`Deleted file from storage: ${filePath}`);
+                console.log(`Deleted file from storage: ${filePath}`);
             } else {
-                // console.warn('File does not exist in storage:', filePath);
+                console.warn('File does not exist in storage:', filePath);
             }
+        } else {
+            console.warn('No photo URL provided for deletion.');
         }
 
         // Delete the employee document from Firestore
@@ -250,12 +256,10 @@ exports.deleteEmployee = async (req, res) => {
 
         res.status(200).send({ message: 'Employee deleted successfully' });
     } catch (error) {
-        // console.error('Error deleting employee:', error);
+        console.error('Error deleting employee:', error);
         res.status(500).send({ error: 'Failed to delete employee', details: error.message });
     }
 };
-
-
 // Retrieve all employees
 exports.getAllEmployees = async (req, res) => {
     try {
