@@ -213,9 +213,9 @@ exports.updateEmployee = async (req, res) => {
 // Delete an employee
 exports.deleteEmployee = async (req, res) => {
     try {
-        const { employeeId } = req.params; // Assuming employeeId is passed as a URL parameter
+        const { employeeId } = req.params; // Retrieve employee ID from URL
 
-        // Fetch the employee document to get the photo URL
+        // Reference the document in Firestore
         const employeeRef = db.collection('employees').doc(employeeId);
         const employeeDoc = await employeeRef.get();
 
@@ -223,15 +223,26 @@ exports.deleteEmployee = async (req, res) => {
             return res.status(404).send({ error: 'Employee not found' });
         }
 
+        // Extract employee data and photo URL
         const employeeData = employeeDoc.data();
         const photoUrl = employeeData.photoUrl;
 
-        // If there is a photo URL, delete the photo from Firebase Storage
+        // Delete the photo from Firebase Storage if it exists
         if (photoUrl) {
-            const fileName = photoUrl.split('/').pop(); // Extract the filename from the URL
-            const file = bucket.file(`employees/${fileName}`);
+            // Extract only the file name without query parameters
+            const fileName = photoUrl.split('/').pop().split('?')[0]; // Get the file name without query params
+            const filePath = `employees/${fileName}`;
+            const file = bucket.file(filePath);
 
-            await file.delete(); // Delete the file from storage
+            const [exists] = await file.exists();
+            console.log({ exists });
+            
+            if (exists) {
+                await file.delete();
+                // console.log(`Deleted file from storage: ${filePath}`);
+            } else {
+                // console.warn('File does not exist in storage:', filePath);
+            }
         }
 
         // Delete the employee document from Firestore
@@ -239,11 +250,10 @@ exports.deleteEmployee = async (req, res) => {
 
         res.status(200).send({ message: 'Employee deleted successfully' });
     } catch (error) {
-        console.error('Error deleting employee:', error);
+        // console.error('Error deleting employee:', error);
         res.status(500).send({ error: 'Failed to delete employee', details: error.message });
     }
 };
-
 
 
 // Retrieve all employees
